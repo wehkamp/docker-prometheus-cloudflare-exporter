@@ -52,6 +52,13 @@ class MetricsCollector(object):
         return
 
 
+    metric_cloudflare_pop = Metric('cloudflare_pop', 'Cloudflare global Point of Presence stats', 'summary')
+    metric_cloudflare_pop_requests = Metric('cloudflare_pop_requests', 'Incoming requests', 'gauge')
+    metric_cloudflare_pop_bandwidth = Metric('cloudflare_pop_bandwidth', 'Bandwidth used in bytes', 'gauge')
+    metric_cloudflare_pop_threats = Metric('cloudflare_pop_threats', 'Threats', 'gauge')
+    metric_cloudflare_pop_http_response = Metric('cloudflare_pop_http_response', 'HTTP responses', 'gauge')
+    metric_cloudflare_pop_threat_type = Metric('cloudflare_pop_threat_type', 'Threat types seen', 'gauge')
+
     for sample in response['result']:
         """
         Since we're about to fetch 30 minutes worth of data, settle with the
@@ -60,37 +67,33 @@ class MetricsCollector(object):
         """
         serie = sample['timeseries'][-1]
         window = serie['since'] + ' ' + serie['until']
-        metric = Metric('cloudflare_pop', 'Cloudflare global Point of Presence stats, window '+window, 'summary')
-        metric.add_sample('cloudflare_pop', value=1, labels={'colo_id': sample['colo_id']})
-        yield metric
+        metric_cloudflare_pop.add_sample('cloudflare_pop', value=1, labels={'colo_id': sample['colo_id']})
 
         cachedr = serie['requests']['cached']
         uncachedr = serie['requests']['uncached']
-        metric = Metric('cloudflare_pop_requests', 'Incoming requests', 'gauge')
-        metric.add_sample('cloudflare_pop_requests', value=cachedr, labels={'colo_id': sample['colo_id'], 'requests_type': 'cached'})
-        metric.add_sample('cloudflare_pop_requests', value=uncachedr, labels={'colo_id': sample['colo_id'], 'requests_type': 'uncached'})
-        yield metric
+        metric_cloudflare_pop_requests.add_sample('cloudflare_pop_requests', value=cachedr, labels={'colo_id': sample['colo_id'], 'requests_type': 'cached'})
+        metric_cloudflare_pop_requests.add_sample('cloudflare_pop_requests', value=uncachedr, labels={'colo_id': sample['colo_id'], 'requests_type': 'uncached'})
 
         cachedbw = serie['bandwidth']['cached']
         uncachedbw = serie['bandwidth']['uncached']
-        metric = Metric('cloudflare_pop_bandwidth', 'Bandwidth used in bytes', 'gauge')
-        metric.add_sample('cloudflare_pop_bandwidth', value=cachedbw, labels={'colo_id': sample['colo_id'], 'bandwidth_type': 'cached'})
-        metric.add_sample('cloudflare_pop_bandwidth', value=uncachedbw, labels={'colo_id': sample['colo_id'], 'bandwidth_type': 'uncached'})
-        yield metric
+        metric_cloudflare_pop_bandwidth.add_sample('cloudflare_pop_bandwidth', value=cachedbw, labels={'colo_id': sample['colo_id'], 'bandwidth_type': 'cached'})
+        metric_cloudflare_pop_bandwidth.add_sample('cloudflare_pop_bandwidth', value=uncachedbw, labels={'colo_id': sample['colo_id'], 'bandwidth_type': 'uncached'})
 
-        metric = Metric('cloudflare_pop_threats', 'Threats', 'gauge')
         threats = serie['threats']['all']
-        metric.add_sample('cloudflare_pop_threats', value=threats, labels={'colo_id': sample['colo_id']})
+        metric_cloudflare_pop_threats.add_sample('cloudflare_pop_threats', value=threats, labels={'colo_id': sample['colo_id']})
 
-        metric = Metric('cloudflare_pop_http_response', 'HTTP responses', 'gauge')
         for http_status, value in serie['requests']['http_status'].items():
-            metric.add_sample('cloudflare_pop_http_response', value=value, labels={'colo_id': sample['colo_id'], 'http_status': http_status})
-        yield metric
+            metric_cloudflare_pop_http_response.add_sample('cloudflare_pop_http_response', value=value, labels={'colo_id': sample['colo_id'], 'http_status': http_status})
 
-        metric = Metric('cloudflare_pop_threat_type', 'Threat types seen', 'gauge')
         for threat, value in serie['threats']['type'].items():
-            metric.add_sample('cloudflare_pop_threat_type', value=value, labels={'colo_id': sample['colo_id'], 'threat': threat})
-        yield metric
+            metric_cloudflare_pop_threat_type.add_sample('cloudflare_pop_threat_type', value=value, labels={'colo_id': sample['colo_id'], 'threat': threat})
+
+    yield metric_cloudflare_pop
+    yield metric_cloudflare_pop_requests
+    yield metric_cloudflare_pop_bandwidth
+    yield metric_cloudflare_pop_threats
+    yield metric_cloudflare_pop_http_response
+    yield metric_cloudflare_pop_threat_type
 
 
 if __name__ == '__main__':
