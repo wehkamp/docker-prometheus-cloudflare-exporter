@@ -86,7 +86,6 @@ class MetricsCollector(object):
         for threat, value in serie['threats']['type'].items():
             metric_cloudflare_pop_threat_type.add_sample('cloudflare_pop_threat_type', value=value, labels={'colo_id': sample['colo_id'], 'threat': threat})
 
-    yield metric_cloudflare_pop
     yield metric_cloudflare_pop_requests
     yield metric_cloudflare_pop_bandwidth
     yield metric_cloudflare_pop_threats
