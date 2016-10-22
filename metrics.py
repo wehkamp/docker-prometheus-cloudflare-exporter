@@ -52,7 +52,6 @@ class MetricsCollector(object):
         return
 
 
-    metric_cloudflare_pop = Metric('cloudflare_pop', 'Cloudflare global Point of Presence stats', 'summary')
     metric_cloudflare_pop_requests = Metric('cloudflare_pop_requests', 'Incoming requests', 'gauge')
     metric_cloudflare_pop_bandwidth = Metric('cloudflare_pop_bandwidth', 'Bandwidth used in bytes', 'gauge')
     metric_cloudflare_pop_threats = Metric('cloudflare_pop_threats', 'Threats', 'gauge')
@@ -67,7 +66,6 @@ class MetricsCollector(object):
         """
         serie = sample['timeseries'][-1]
         window = serie['since'] + ' ' + serie['until']
-        metric_cloudflare_pop.add_sample('cloudflare_pop', value=1, labels={'colo_id': sample['colo_id']})
 
         cachedr = serie['requests']['cached']
         uncachedr = serie['requests']['uncached']
