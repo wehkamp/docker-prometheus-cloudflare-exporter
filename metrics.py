@@ -46,7 +46,7 @@ class MetricsCollector(object):
 
 
   def collect(self):
-    response = self.getdatafromcf(url=self.endpoint+'zones/'+self.zoneid+'/analytics/colos?since=-30&continuous=true')
+    response = self.getdatafromcf(url=self.endpoint+'zones/'+self.zoneid+'/analytics/colos?since=-60&until=-5&continuous=false')
     if not response['success']:
         print('Failed to get information from cloudflare')
         return
@@ -59,11 +59,6 @@ class MetricsCollector(object):
     metric_cloudflare_pop_threat_type = Metric('cloudflare_pop_threat_type', 'Threat types seen', 'gauge')
 
     for sample in response['result']:
-        """
-        Since we're about to fetch 30 minutes worth of data, settle with the
-        last sample and process only that. Please note that this means a serious
-        5 minutes delay in stats.
-        """
         serie = sample['timeseries'][-1]
         window = serie['since'] + ' ' + serie['until']
 
