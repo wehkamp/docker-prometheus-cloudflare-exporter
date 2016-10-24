@@ -9,7 +9,6 @@ Running the container:
 
 ```
 docker run \
- --rm \
  -d \
  -p 9199:9199 \
  -e SERVICE_PORT=9199 \
