@@ -96,18 +96,18 @@ def generate_metrics(sample):
     # Use the last sample since that contains the latest minute of data.
     serie = sample['timeseries'][-1]
     metrics = []
-    metrics.append('cloudflare_pop_requests{colo_id="%s",type="%s"} %s' % (sample['colo_id'], 'cached', serie['requests']['cached']))
-    metrics.append('cloudflare_pop_requests{colo_id="%s",type="%s"} %s' % (sample['colo_id'], 'uncached', serie['requests']['uncached']))
-    metrics.append('cloudflare_pop_bandwidth{colo_id="%s",type="%s"} %s' % (sample['colo_id'], 'cached', serie['bandwidth']['cached']))
-    metrics.append('cloudflare_pop_bandwidth{colo_id="%s",type="%s"} %s' % (sample['colo_id'], 'uncached', serie['bandwidth']['uncached']))
+    metrics.append('cloudflare_pop_requests{zone="%s",colo_id="%s",type="%s"} %s' % (ZONE, sample['colo_id'], 'cached', serie['requests']['cached']))
+    metrics.append('cloudflare_pop_requests{zone="%s",colo_id="%s",type="%s"} %s' % (ZONE, sample['colo_id'], 'uncached', serie['requests']['uncached']))
+    metrics.append('cloudflare_pop_bandwidth{zone="%s",colo_id="%s",type="%s"} %s' % (ZONE, sample['colo_id'], 'cached', serie['bandwidth']['cached']))
+    metrics.append('cloudflare_pop_bandwidth{zone="%s",colo_id="%s",type="%s"} %s' % (ZONE, sample['colo_id'], 'uncached', serie['bandwidth']['uncached']))
 
     for http_status, value in serie['requests']['http_status'].items():
-        metrics.append('cloudflare_pop_http_response{colo_id="%s",http_status="%s"} %s' % (sample['colo_id'], http_status, value))
+        metrics.append('cloudflare_pop_http_response{zone="%s",colo_id="%s",http_status="%s"} %s' % (ZONE, sample['colo_id'], http_status, value))
 
-    metrics.append('cloudflare_pop_threats{colo_id="%s"} %s' % (sample['colo_id'], serie['threats']['all']))
+    metrics.append('cloudflare_pop_threats{zone="%s",colo_id="%s"} %s' % (ZONE, sample['colo_id'], serie['threats']['all']))
 
     for threat, value in serie['threats']['type'].items():
-        metrics.append('cloudflare_pop_threat_types{colo_id="%s",threat_type="%s"} %s' % (sample['colo_id'], threat, value))
+        metrics.append('cloudflare_pop_threat_types{zone="%s",colo_id="%s",threat_type="%s"} %s' % (ZONE, sample['colo_id'], threat, value))
 
     return metrics
 
