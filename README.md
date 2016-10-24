@@ -2,7 +2,7 @@
 A very simple prometheus exporter that exposes metrics from cloudflare's colocations API as described per `https://api.cloudflare.com/#zone-analytics-analytics-by-co-locations`. Sadly, this is for Cloudflare Enterprise customers only.
 It'll expose metrics per PoP and shows requests, bandwidth and threats.
 
-Please note that the API will only return statistics with a 5 minutes delay.
+Please note that because of how the Cloudflare API works this exporter will only return statistics from _now() - 5 minutes_.
 
 ### Try it
 Running the container:
