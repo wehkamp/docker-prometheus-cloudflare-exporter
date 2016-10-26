@@ -1,12 +1,18 @@
 FROM wehkamp/alpine:3.4
 
-ENTRYPOINT ["python", "/usr/local/bin/metrics.py"]
-EXPOSE 9199
+ENTRYPOINT ["python", "-m", "exporter"]
+ARG SERVICE_PORT=9199
+EXPOSE ${SERVICE_PORT}
+ENV FLASK_APP=/exporter/exporter/app.py \
+    SERVICE_PORT=${SERVICE_PORT} \
+    CONTAINER_LABELS='["role", "team", "container_type"]'
 
 RUN LAYER=build \
   && apk add -U python py-pip \
-  && pip install prometheus_client requests
+  && pip install prometheus_client requests apscheduler Flask \
+  && rm -rf /var/cache/apk/* \
+  && rm -rf ~/.cache/pip
 
-COPY metrics.py /usr/local/bin/
+ADD ./exporter /exporter
 
 LABEL container.name=wehkamp/prometheus-cloudflare-exporter:1.0
