@@ -25,7 +25,7 @@ def process(raw_data, zone):
         families['received_requests'].add_metric([zone, 'uncached', popdata['colo_id']], serie['requests']['uncached'])
 
         families['bandwidth_bytes'].add_metric([zone, 'cached', popdata['colo_id']], serie['bandwidth']['cached'])
-        families['bandwidth_bytes'].add_metric([zone, 'uncached', popdata['colo_id']], serie['bandwidth']['cached'])
+        families['bandwidth_bytes'].add_metric([zone, 'uncached', popdata['colo_id']], serie['bandwidth']['uncached'])
 
         for http_status, value in serie['requests']['http_status'].items():
             families['http_responses_send'].add_metric([zone, popdata['colo_id'], http_status], value)
