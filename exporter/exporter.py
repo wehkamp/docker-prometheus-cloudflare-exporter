@@ -20,7 +20,7 @@ def process(raw_data, zone):
     def generate_metrics(popdata, families):
         # The last sample is what we're after here.
         serie = popdata['timeseries'][-2]
-        print ("%s | %s" % (serie['since'], serie['until']))
+
         families['received_requests'].add_metric([zone, 'cached', popdata['colo_id']], serie['requests']['cached'])
         families['received_requests'].add_metric([zone, 'uncached', popdata['colo_id']], serie['requests']['uncached'])
 
