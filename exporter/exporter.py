@@ -18,9 +18,8 @@ def process(raw_data, zone):
                 yield metric
 
     def generate_metrics(popdata, families):
-        # Samples -4 ~ -1 could contain zeros and no actual values.
-        # This is a Cloudflare limitation.
-        serie = popdata['timeseries'][-7]
+        # The last sample is what we're after here.
+        serie = popdata['timeseries'][-2]
         print ("%s | %s" % (serie['since'], serie['until']))
         families['received_requests'].add_metric([zone, 'cached', popdata['colo_id']], serie['requests']['cached'])
         families['received_requests'].add_metric([zone, 'uncached', popdata['colo_id']], serie['requests']['uncached'])

@@ -41,7 +41,7 @@ zoneid = getzoneid()
 
 def get_metrics():
     print('Fetching data')
-    response = getdatafromcf(url=ENDPOINT+'zones/'+zoneid+'/analytics/colos?since=-30&continuous=false')
+    response = getdatafromcf(url=ENDPOINT+'zones/'+zoneid+'/analytics/colos?since=-35&until=-5&continuous=false')
     if not response['success']:
         print('Failed to get information from cloudflare')
         for m in response['errors']:
