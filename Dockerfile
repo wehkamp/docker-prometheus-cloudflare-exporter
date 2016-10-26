@@ -4,8 +4,7 @@ ENTRYPOINT ["python", "-m", "exporter"]
 ARG SERVICE_PORT=9199
 EXPOSE ${SERVICE_PORT}
 ENV FLASK_APP=/exporter/exporter/app.py \
-    SERVICE_PORT=${SERVICE_PORT} \
-    CONTAINER_LABELS='["role", "team", "container_type"]'
+    SERVICE_PORT=${SERVICE_PORT}
 
 RUN LAYER=build \
   && apk add -U python py-pip \
