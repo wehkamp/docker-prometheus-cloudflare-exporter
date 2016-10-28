@@ -38,7 +38,7 @@ def process(raw_data, zone):
     families = {
         'received_requests':   GaugeMetricFamily('cloudflare_pop_received_requests', 'Requests received at this PoP location.', labels=['zone', 'type', 'colo_id']),
         'bandwidth_bytes':     GaugeMetricFamily('cloudflare_pop_bandwidth_bytes', 'Bandwidth send from this PoP location.', labels=['zone', 'type', 'colo_id']),
-        'http_responses_send': GaugeMetricFamily('cloudflare_pop_http_responses_send', 'Breakdown per HTTP response code.', labels=['zone', 'type', 'colo_id']),
+        'http_responses_send': GaugeMetricFamily('cloudflare_pop_http_responses_send', 'Breakdown per HTTP response code.', labels=['zone', 'colo_id', 'http_status']),
         'threats_seen':        GaugeMetricFamily('cloudflare_pop_threats_seen', 'Threats identified.', labels=['zone', 'colo_id', 'threats']),
         'threat_types':        GaugeMetricFamily('cloudflare_pop_threat_types', 'Threat breakdown per threat type.', labels=['zone', 'colo_id', 'threat_type'])
     }
