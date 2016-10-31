@@ -28,25 +28,29 @@ The exporter exposes the following metrics, all returned per PoP:
 
 | metric | description | type |
 | ------ | ----------- | ---- |
-| cloudflare_pop_requests | cached and uncached requests received on an edge-location | gauge |
-| cloudflare_pop_bandwidth | cached and uncached bandwidth send from an edge-location | gauge |
-| cloudflare_pop_http_reponses | breakdown of requests per HTTP code | gauge |
-| cloudflare_pop_threats | number of threats identified received in at this location | gauge |
+| cloudflare_pop_received_requests | cached and uncached requests received on an edge-location | gauge |
+| cloudflare_pop_bandwidth_bytes | cached and uncached bandwidth send from an edge-location | gauge |
+| cloudflare_pop_http_responses_send | breakdown of requests per HTTP code | gauge |
+| cloudflare_pop_threats_seen | number of threats identified received in at this location | gauge |
 | cloudflare_pop_threat_types | types of threats seen | gauge
 
 Random scrape result:
 ```
-cloudflare_pop_requests{zone="example.com", colo_id="BRU",type="cached"} 449
-cloudflare_pop_requests{zone="example.com", colo_id="BRU",type="uncached"} 1040
-cloudflare_pop_bandwidth{zone="example.com", colo_id="BRU",type="cached"} 16385371
-cloudflare_pop_bandwidth{zone="example.com", colo_id="BRU",type="uncached"} 5330470
-cloudflare_pop_http_response{zone="example.com", colo_id="BRU",http_status="201"} 8
-cloudflare_pop_http_response{zone="example.com", colo_id="BRU",http_status="200"} 1235
-cloudflare_pop_http_response{zone="example.com", colo_id="BRU",http_status="204"} 166
-cloudflare_pop_http_response{zone="example.com", colo_id="BRU",http_status="301"} 3
-cloudflare_pop_http_response{zone="example.com", colo_id="BRU",http_status="302"} 7
-cloudflare_pop_http_response{zone="example.com", colo_id="BRU",http_status="304"} 14
-cloudflare_pop_http_response{zone="example.com", colo_id="BRU",http_status="404"} 44
-cloudflare_pop_http_response{zone="example.com", colo_id="BRU",http_status="499"} 12
-cloudflare_pop_threats{zone="example.com", colo_id="BRU"} 0
-```
+# HELP cloudflare_pop_http_responses_send Breakdown per HTTP response code.
+# TYPE cloudflare_pop_http_responses_send gauge
+cloudflare_pop_http_responses_send{colo_id="BRU",http_status="200",zone="example.com"} 25.0
+cloudflare_pop_http_responses_send{colo_id="BRU",http_status="302",zone="example.com"} 1.0
+cloudflare_pop_http_responses_send{colo_id="BRU",http_status="204",zone="example.com"} 2.0
+# HELP cloudflare_pop_threat_types Threat breakdown per threat type.
+# TYPE cloudflare_pop_threat_types gauge
+# HELP cloudflare_pop_threats_seen Threats identified.
+# TYPE cloudflare_pop_threats_seen gauge
+cloudflare_pop_threats_seen{colo_id="BRU",zone="example.com"} 0.0
+# HELP cloudflare_pop_bandwidth_bytes Bandwidth send from this PoP location.
+# TYPE cloudflare_pop_bandwidth_bytes gauge
+cloudflare_pop_bandwidth_bytes{colo_id="BRU",type="cached",zone="example.com"} 404362.0
+cloudflare_pop_bandwidth_bytes{colo_id="BRU",type="uncached",zone="example.com"} 68411.0
+# HELP cloudflare_pop_received_requests Requests received at this PoP location.
+# TYPE cloudflare_pop_received_requests gauge
+cloudflare_pop_received_requests{colo_id="BRU",type="cached",zone="example.com"} 10.0
+cloudflare_pop_received_requests{colo_id="BRU",type="uncached",zone="example.com"} 18.0
