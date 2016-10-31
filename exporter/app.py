@@ -59,6 +59,16 @@ def update_latest():
 
 app = Flask(__name__)
 
+
+@app.route("/")
+def rootrequest():
+    r = '<h3>Welcome to the Cloudflare prometheus exporter!</h3>'
+    r+= 'The following endpoints are available:<br/>'
+    r+= ' <a href="/metrics">/metrics</a> - Prometheus scrapable metrics<br/>'
+    r+= ' <a href="/status">/status</a>  - A simple status endpoint returning "OK"<br/>'
+    return r
+
+
 @app.route("/status")
 def status():
     return "OK"
