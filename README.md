@@ -33,6 +33,7 @@ The exporter exposes the following metrics, all returned per PoP:
 | cloudflare_pop_http_responses_send | breakdown of requests per HTTP code | gauge |
 | cloudflare_pop_threats_seen | number of threats identified received in at this location | gauge |
 | cloudflare_pop_threat_types | types of threats seen | gauge
+| cloudflare_pop_threat_countries | countries causing threats | gauge
 
 Random scrape result:
 ```
@@ -41,6 +42,8 @@ Random scrape result:
 cloudflare_pop_http_responses_send{colo_id="BRU",http_status="200",zone="example.com"} 25.0
 cloudflare_pop_http_responses_send{colo_id="BRU",http_status="302",zone="example.com"} 1.0
 cloudflare_pop_http_responses_send{colo_id="BRU",http_status="204",zone="example.com"} 2.0
+# HELP cloudflare_pop_threat_countries Threat breakdown per threat country.
+# TYPE cloudflare_pop_threat_countries gauge
 # HELP cloudflare_pop_threat_types Threat breakdown per threat type.
 # TYPE cloudflare_pop_threat_types gauge
 # HELP cloudflare_pop_threats_seen Threats identified.
