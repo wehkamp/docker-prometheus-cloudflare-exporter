@@ -29,19 +29,19 @@ The exporter exposes the following metrics, all returned per PoP:
 | metric | description | type |
 | ------ | ----------- | ---- |
 | cloudflare_pop_received_requests | cached and uncached requests received on an edge-location | gauge |
-| cloudflare_pop_bandwidth_bytes | cached and uncached bandwidth send from an edge-location | gauge |
-| cloudflare_pop_http_responses_send | breakdown of requests per HTTP code | gauge |
+| cloudflare_pop_bandwidth_bytes | cached and uncached bandwidth sent from an edge-location | gauge |
+| cloudflare_pop_http_responses_sent | breakdown of requests per HTTP code | gauge |
 | cloudflare_pop_threats_seen | number of threats identified received in at this location | gauge |
 | cloudflare_pop_threat_types | types of threats seen | gauge
 | cloudflare_pop_threat_countries | countries causing threats | gauge
 
 Random scrape result:
 ```
-# HELP cloudflare_pop_http_responses_send Breakdown per HTTP response code.
-# TYPE cloudflare_pop_http_responses_send gauge
-cloudflare_pop_http_responses_send{colo_id="BRU",http_status="200",zone="example.com"} 25.0
-cloudflare_pop_http_responses_send{colo_id="BRU",http_status="302",zone="example.com"} 1.0
-cloudflare_pop_http_responses_send{colo_id="BRU",http_status="204",zone="example.com"} 2.0
+# HELP cloudflare_pop_http_responses_sent Breakdown per HTTP response code.
+# TYPE cloudflare_pop_http_responses_sent gauge
+cloudflare_pop_http_responses_sent{colo_id="BRU",http_status="200",zone="example.com"} 25.0
+cloudflare_pop_http_responses_sent{colo_id="BRU",http_status="302",zone="example.com"} 1.0
+cloudflare_pop_http_responses_sent{colo_id="BRU",http_status="204",zone="example.com"} 2.0
 # HELP cloudflare_pop_threat_countries Threat breakdown per threat country.
 # TYPE cloudflare_pop_threat_countries gauge
 # HELP cloudflare_pop_threat_types Threat breakdown per threat type.
@@ -49,7 +49,7 @@ cloudflare_pop_http_responses_send{colo_id="BRU",http_status="204",zone="example
 # HELP cloudflare_pop_threats_seen Threats identified.
 # TYPE cloudflare_pop_threats_seen gauge
 cloudflare_pop_threats_seen{colo_id="BRU",zone="example.com"} 0.0
-# HELP cloudflare_pop_bandwidth_bytes Bandwidth send from this PoP location.
+# HELP cloudflare_pop_bandwidth_bytes Bandwidth sent from this PoP location.
 # TYPE cloudflare_pop_bandwidth_bytes gauge
 cloudflare_pop_bandwidth_bytes{colo_id="BRU",type="cached",zone="example.com"} 404362.0
 cloudflare_pop_bandwidth_bytes{colo_id="BRU",type="uncached",zone="example.com"} 68411.0
