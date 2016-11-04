@@ -18,9 +18,7 @@ docker run \
  wehkamp/prometheus-cloudflare-exporter:1.0
 ```
 ```
-Starting scrape service for zone *example.com* using key [deadbe...]
-Exposing Cloudflare metrics on port 9199
-Metrics updated in 1 seconds.
+Fetching data
 ```
 
 ### metrics
