@@ -1,10 +1,12 @@
 # Cloudflare exporter for Prometheus
-A very simple prometheus exporter that exposes metrics from cloudflare's colocations API as described per `https://api.cloudflare.com/#zone-analytics-analytics-by-co-locations`. Sadly, this is for Cloudflare Enterprise customers only.
+
+A very simple Prometheus exporter that exposes metrics from Cloudflare's colocations API as described in the [API documentation](https://api.cloudflare.com/#zone-analytics-analytics-by-co-locations). Sadly, this is for Cloudflare Enterprise customers only.
 It'll expose metrics per PoP and shows requests, bandwidth and threats.
 
-Please note that because of how the Cloudflare API works this exporter will only return statistics from _now() - 5 minutes_.
+Please note that because of how the Cloudflare API works this exporter will only return statistics from `now() - 5 minutes`.
 
-### try it
+### Try it
+
 Running the container:
 
 ```
@@ -21,20 +23,21 @@ docker run \
 Fetching data
 ```
 
-### metrics
+### Metrics
 The exporter exposes the following metrics, all returned per PoP:
 
-| metric | description | type |
-| ------ | ----------- | ---- |
-| cloudflare_pop_received_requests | cached and uncached requests received on an edge-location | gauge |
-| cloudflare_pop_bandwidth_bytes | cached and uncached bandwidth sent from an edge-location | gauge |
-| cloudflare_pop_http_responses_sent | breakdown of requests per HTTP code | gauge |
-| cloudflare_pop_threats_seen | number of threats identified received in at this location | gauge |
-| cloudflare_pop_threat_types | types of threats seen | gauge
-| cloudflare_pop_threat_countries | countries causing threats | gauge
+| Name                                 | Description                                               |  Type |
+|:-------------------------------------|:----------------------------------------------------------|:-----:|
+| `cloudflare_pop_received_requests`   | cached and uncached requests received on an edge-location | gauge |
+| `cloudflare_pop_bandwidth_bytes`     | cached and uncached bandwidth sent from an edge-location  | gauge |
+| `cloudflare_pop_http_responses_sent` | breakdown of requests per HTTP code                       | gauge |
+| `cloudflare_pop_threats_seen`        | number of threats identified received in at this location | gauge |
+| `cloudflare_pop_threat_types`        | types of threats seen                                     | gauge |
+| `cloudflare_pop_threat_countries`    | countries causing threats                                 | gauge |
 
 Random scrape result:
-```
+
+```python
 # HELP cloudflare_pop_http_responses_sent Breakdown per HTTP response code.
 # TYPE cloudflare_pop_http_responses_sent gauge
 cloudflare_pop_http_responses_sent{colo_id="BRU",http_status="200",zone="example.com"} 25.0
@@ -57,17 +60,19 @@ cloudflare_pop_received_requests{colo_id="BRU",type="cached",zone="example.com"}
 cloudflare_pop_received_requests{colo_id="BRU",type="uncached",zone="example.com"} 18.0
 ```
 
-### dashboard
+### Dashboard
+
 A sample Grafana dashboard is [included](grafana-cloudflare-dashboard.json) to visualize the information.
 
 Overview of requests, cached and uncached:
-![Attacking Countries](./docs/assets/requests_total.png)
+![Requests](./docs/assets/requests_total.png)
 
 Overview of requests served per Cloudflare network point-of-presence:
-![Attacking Countries](./docs/assets/requests_per_pop.png)
+![Requests per PoP](./docs/assets/requests_per_pop.png)
 
 Overview of actual countries that cause threats:
 ![Attacking Countries](./docs/assets/threats.png)
 
-### todo
-Implement a way to store datapoints in Prometheus using timestamps received from Cloudflare. This should remove the delay as we currently have it.
+### Todo
+
+- [ ] Implement a way to store datapoints in Prometheus using timestamps received from Cloudflare. This should remove the delay as we currently have it.
