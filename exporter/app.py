@@ -77,7 +77,10 @@ def get_dns_metrics():
             logging.error('[%s] %s' % (error['code'], error['message']))
             return ''
 
-    logging.info('Records retrieved: %d' % r['result']['rows'])
+    records = int(r['result']['rows'])
+    logging.info('Records retrieved: %d' % records)
+    if records < 1:
+        return ''
     return dnsexporter.process(r['result']['data'], ZONE)
 
 latest_metrics = (get_colo_metrics() + get_dns_metrics())
