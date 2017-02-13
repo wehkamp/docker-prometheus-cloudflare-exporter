@@ -20,14 +20,14 @@ def process(raw_data, zone):
         dns_data = pop_data['dimensions']
         rvalue = pop_data['metrics'][0]
 
-        families['requested_record'].add_metric(
+        families['record_queried'].add_metric(
             [zone, dns_data[0], dns_data[1], dns_data[2], dns_data[3]],
             rvalue)
 
     families = {
-        'requested_record': GaugeMetricFamily(
-            'cloudflare_dns_requested_record',
-            'DNS record requested at PoP location.',
+        'record_queried': GaugeMetricFamily(
+            'cloudflare_dns_record_queries',
+            'DNS queries per record at PoP location.',
             labels=['zone', 'record_name', 'record_type', 'query_response', 'colo_id'])
     }
 

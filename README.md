@@ -35,6 +35,7 @@ The exporter exposes the following metrics, all returned per PoP:
 | `cloudflare_pop_threats_seen`        | number of threats identified received in at this location | gauge |
 | `cloudflare_pop_threat_types`        | types of threats seen                                     | gauge |
 | `cloudflare_pop_threat_countries`    | countries causing threats                                 | gauge |
+| `cloudflare_dns_record_queries`      | DNS record queries per edge-location                      | gauge |
 
 Random scrape result:
 
@@ -59,10 +60,10 @@ cloudflare_pop_bandwidth_bytes{colo_id="BRU",type="uncached",zone="example.com"}
 # TYPE cloudflare_pop_received_requests gauge
 cloudflare_pop_received_requests{colo_id="BRU",type="cached",zone="example.com"} 10.0
 cloudflare_pop_received_requests{colo_id="BRU",type="uncached",zone="example.com"} 18.0
-# HELP cloudflare_dns_requested_record DNS record requested at PoP location.
-# TYPE cloudflare_dns_requested_record gauge
-cloudflare_dns_requested_record{colo_id="SOF",query_response="NXDOMAIN",record_name="qlgijqgzsd.wehkamp.com",record_type="A",zone="wehkamp.com"} 1.0
-cloudflare_dns_requested_record{colo_id="LAX",query_response="NOERROR",record_name="www.wehkamp.com",record_type="A",zone="wehkamp.com"} 5.0
+# HELP cloudflare_dns_record_queries DNS queries per record at PoP location.
+# TYPE cloudflare_dns_record_queries gauge
+cloudflare_dns_record_queries{colo_id="SOF",query_response="NXDOMAIN",record_name="qlgijqgzsd.example.com",record_type="A",zone="example.com"} 1.0
+cloudflare_dns_record_queries{colo_id="LAX",query_response="NOERROR",record_name="www.example.com",record_type="A",zone="example.com"} 5.0
 ```
 
 ### Dashboard
