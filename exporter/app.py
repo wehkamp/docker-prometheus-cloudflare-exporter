@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import datetime
 import os
 import sys
 import json
@@ -12,6 +13,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask
 
 from . import coloexporter
+from . import dnsexporter
 
 
 logging.basicConfig(level=logging.os.environ.get('LOG_LEVEL', 'INFO'))
@@ -60,12 +62,30 @@ def get_colo_metrics():
     logging.info('Window: %s | %s' % (query['since'], query['until']))
     return coloexporter.process(r['result'], ZONE)
 
-latest_metrics = get_colo_metrics()
+
+def get_dns_metrics():
+    logging.info('Fetching DNS metrics data')
+    time_since = (datetime.datetime.now() + datetime.timedelta(minutes=-1) ).strftime("%Y-%m-%dT%H:%M:%SZ")
+    time_until = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+    endpoint = '%szones/%s/dns_analytics/report?metrics=queryCount&dimensions=queryName,queryType,responseCode,coloName&since=%s&until=%s'
+    logging.info('Using: since %s until %s' % (time_since, time_until))
+    r = get_data_from_cf(url=endpoint % (ENDPOINT, get_zone_id(), time_since, time_until))
+
+    if not r['success']:
+        logging.error('Failed to get information from Cloudflare')
+        for error in r['errors']:
+            logging.error('[%s] %s' % (error['code'], error['message']))
+            return ''
+
+    logging.info('Records retrieved: %d' % r['result']['rows'])
+    return dnsexporter.process(r['result']['data'], ZONE)
+
+latest_metrics = (get_colo_metrics() + get_dns_metrics())
 
 
 def update_latest():
     global latest_metrics
-    latest_metrics = get_colo_metrics()
+    latest_metrics = (get_colo_metrics() + get_dns_metrics())
 
 
 app = Flask(__name__)
