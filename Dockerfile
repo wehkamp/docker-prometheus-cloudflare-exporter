@@ -1,10 +1,9 @@
 FROM wehkamp/alpine:3.4
 
 ENTRYPOINT ["python", "-m", "exporter"]
-ARG SERVICE_PORT=9199
-EXPOSE ${SERVICE_PORT}
+EXPOSE 9199
 ENV FLASK_APP=/exporter/exporter/app.py \
-    SERVICE_PORT=${SERVICE_PORT}
+    SERVICE_PORT=9199
 
 RUN LAYER=build \
   && apk add -U python py-pip \
