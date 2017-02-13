@@ -14,10 +14,13 @@ from flask import Flask
 from . import coloexporter
 
 
+logging.basicConfig(level=logging.os.environ.get('LOG_LEVEL', 'INFO'))
+
+
 REQUIRED_VARS = {'AUTH_EMAIL', 'AUTH_KEY', 'SERVICE_PORT', 'ZONE'}
 for key in REQUIRED_VARS:
     if key not in os.environ:
-        print('Missing value for %s' % key)
+        logging.error('Missing value for %s' % key)
         sys.exit()
 
 SERVICE_PORT = int(os.environ.get('SERVICE_PORT', 9199))
@@ -43,7 +46,7 @@ def get_zone_id():
 
 
 def get_colo_metrics():
-    print('Fetching colo metrics data')
+    logging.info('Fetching colo metrics data')
     endpoint = '%szones/%s/analytics/colos?since=-35&until=-5&continuous=false'
     r = get_data_from_cf(url=endpoint % (ENDPOINT, get_zone_id()))
 
