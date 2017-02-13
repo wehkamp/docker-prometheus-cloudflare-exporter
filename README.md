@@ -5,6 +5,8 @@ It'll expose metrics per PoP and shows requests, bandwidth and threats.
 
 Please note that because of how the Cloudflare API works this exporter will only return statistics from `now() - 5 minutes`.
 
+In addition, the exporter will also fetch DNS analytics. Exporting metrics per records queried at edge resolvers per PoP.
+
 ### Try it
 
 Running the container:
@@ -13,7 +15,6 @@ Running the container:
 docker run \
  -d \
  -p 9199:9199 \
- -e SERVICE_PORT=9199 \
  -e ZONE=example.com \
  -e AUTH_KEY=deadbeefcafe \
  -e AUTH_EMAIL=admin@example.com \
@@ -58,6 +59,10 @@ cloudflare_pop_bandwidth_bytes{colo_id="BRU",type="uncached",zone="example.com"}
 # TYPE cloudflare_pop_received_requests gauge
 cloudflare_pop_received_requests{colo_id="BRU",type="cached",zone="example.com"} 10.0
 cloudflare_pop_received_requests{colo_id="BRU",type="uncached",zone="example.com"} 18.0
+# HELP cloudflare_dns_requested_record DNS record requested at PoP location.
+# TYPE cloudflare_dns_requested_record gauge
+cloudflare_dns_requested_record{colo_id="SOF",query_response="NXDOMAIN",record_name="qlgijqgzsd.wehkamp.com",record_type="A",zone="wehkamp.com"} 1.0
+cloudflare_dns_requested_record{colo_id="LAX",query_response="NOERROR",record_name="www.wehkamp.com",record_type="A",zone="wehkamp.com"} 5.0
 ```
 
 ### Dashboard
