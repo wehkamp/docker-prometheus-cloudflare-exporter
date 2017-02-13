@@ -11,7 +11,7 @@ import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask
 
-from . import exporter
+from . import coloexporter
 
 
 REQUIRED_VARS = {'AUTH_EMAIL', 'AUTH_KEY', 'SERVICE_PORT', 'ZONE'}
@@ -42,8 +42,8 @@ def get_zone_id():
     return r['result'][0]['id']
 
 
-def get_metrics():
-    print('Fetching data')
+def get_colo_metrics():
+    print('Fetching colo metrics data')
     endpoint = '%szones/%s/analytics/colos?since=-35&until=-5&continuous=false'
     r = get_data_from_cf(url=endpoint % (ENDPOINT, get_zone_id()))
 
@@ -55,14 +55,14 @@ def get_metrics():
 
     query = r['query']
     logging.info('Window: %s | %s' % (query['since'], query['until']))
-    return exporter.process(r['result'], ZONE)
+    return coloexporter.process(r['result'], ZONE)
 
-latest_metrics = get_metrics()
+latest_metrics = get_colo_metrics()
 
 
 def update_latest():
     global latest_metrics
-    latest_metrics = get_metrics()
+    latest_metrics = get_colo_metrics()
 
 
 app = Flask(__name__)
