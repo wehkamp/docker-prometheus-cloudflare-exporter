@@ -28,7 +28,14 @@ def process(raw_data, zone):
         'record_queried': GaugeMetricFamily(
             'cloudflare_dns_record_queries',
             'DNS queries per record at PoP location.',
-            labels=['zone', 'record_name', 'record_type', 'query_response', 'colo_id'])
+            labels=[
+                'zone',
+                'record_name',
+                'record_type',
+                'query_response',
+                'colo_id'
+            ]
+        )
     }
 
     for pop_data in raw_data:

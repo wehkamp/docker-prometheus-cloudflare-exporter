@@ -65,11 +65,18 @@ def get_colo_metrics():
 
 def get_dns_metrics():
     logging.info('Fetching DNS metrics data')
-    time_since = (datetime.datetime.now() + datetime.timedelta(minutes=-1) ).strftime("%Y-%m-%dT%H:%M:%SZ")
+    time_since = (
+                    datetime.datetime.now() + datetime.timedelta(minutes=-1)
+                ).strftime("%Y-%m-%dT%H:%M:%SZ")
     time_until = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
-    endpoint = '%szones/%s/dns_analytics/report?metrics=queryCount&dimensions=queryName,queryType,responseCode,coloName&since=%s&until=%s'
+    endpoint = '%szones/%s/dns_analytics/report?metrics=queryCount'
+    endpoint += '&dimensions=queryName,queryType,responseCode,coloName'
+    endpoint += '&since=%s'
+    endpoint += '&until=%s'
+
     logging.info('Using: since %s until %s' % (time_since, time_until))
-    r = get_data_from_cf(url=endpoint % (ENDPOINT, get_zone_id(), time_since, time_until))
+    r = get_data_from_cf(url=endpoint % (
+            ENDPOINT, get_zone_id(), time_since, time_until))
 
     if not r['success']:
         logging.error('Failed to get information from Cloudflare')
@@ -82,6 +89,7 @@ def get_dns_metrics():
     if records < 1:
         return ''
     return dnsexporter.process(r['result']['data'], ZONE)
+
 
 latest_metrics = (get_colo_metrics() + get_dns_metrics())
 
