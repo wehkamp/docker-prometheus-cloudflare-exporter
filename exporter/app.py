@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import datetime
 import os
 import sys
 import json
@@ -11,13 +12,17 @@ import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask
 
-from . import exporter
+from . import coloexporter
+from . import dnsexporter
+
+
+logging.basicConfig(level=logging.os.environ.get('LOG_LEVEL', 'INFO'))
 
 
 REQUIRED_VARS = {'AUTH_EMAIL', 'AUTH_KEY', 'SERVICE_PORT', 'ZONE'}
 for key in REQUIRED_VARS:
     if key not in os.environ:
-        print('Missing value for %s' % key)
+        logging.error('Missing value for %s' % key)
         sys.exit()
 
 SERVICE_PORT = int(os.environ.get('SERVICE_PORT', 9199))
@@ -42,8 +47,8 @@ def get_zone_id():
     return r['result'][0]['id']
 
 
-def get_metrics():
-    print('Fetching data')
+def get_colo_metrics():
+    logging.info('Fetching colo metrics data')
     endpoint = '%szones/%s/analytics/colos?since=-35&until=-5&continuous=false'
     r = get_data_from_cf(url=endpoint % (ENDPOINT, get_zone_id()))
 
@@ -55,14 +60,43 @@ def get_metrics():
 
     query = r['query']
     logging.info('Window: %s | %s' % (query['since'], query['until']))
-    return exporter.process(r['result'], ZONE)
+    return coloexporter.process(r['result'], ZONE)
 
-latest_metrics = get_metrics()
+
+def get_dns_metrics():
+    logging.info('Fetching DNS metrics data')
+    time_since = (
+                    datetime.datetime.now() + datetime.timedelta(minutes=-1)
+                ).strftime("%Y-%m-%dT%H:%M:%SZ")
+    time_until = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+    endpoint = '%szones/%s/dns_analytics/report?metrics=queryCount'
+    endpoint += '&dimensions=queryName,queryType,responseCode,coloName'
+    endpoint += '&since=%s'
+    endpoint += '&until=%s'
+
+    logging.info('Using: since %s until %s' % (time_since, time_until))
+    r = get_data_from_cf(url=endpoint % (
+            ENDPOINT, get_zone_id(), time_since, time_until))
+
+    if not r['success']:
+        logging.error('Failed to get information from Cloudflare')
+        for error in r['errors']:
+            logging.error('[%s] %s' % (error['code'], error['message']))
+            return ''
+
+    records = int(r['result']['rows'])
+    logging.info('Records retrieved: %d' % records)
+    if records < 1:
+        return ''
+    return dnsexporter.process(r['result']['data'], ZONE)
+
+
+latest_metrics = (get_colo_metrics() + get_dns_metrics())
 
 
 def update_latest():
     global latest_metrics
-    latest_metrics = get_metrics()
+    latest_metrics = (get_colo_metrics() + get_dns_metrics())
 
 
 app = Flask(__name__)

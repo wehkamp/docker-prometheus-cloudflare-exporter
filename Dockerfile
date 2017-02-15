@@ -1,10 +1,9 @@
-FROM wehkamp/alpine:3.4
+FROM wehkamp/alpine:3.5
 
 ENTRYPOINT ["python", "-m", "exporter"]
-ARG SERVICE_PORT=9199
-EXPOSE ${SERVICE_PORT}
+EXPOSE 9199
 ENV FLASK_APP=/exporter/exporter/app.py \
-    SERVICE_PORT=${SERVICE_PORT}
+    SERVICE_PORT=9199
 
 RUN LAYER=build \
   && apk add -U python py-pip \
@@ -14,4 +13,4 @@ RUN LAYER=build \
 
 ADD ./exporter /exporter
 
-LABEL container.name=wehkamp/prometheus-cloudflare-exporter:1.0
+LABEL container.name=wehkamp/prometheus-cloudflare-exporter:1.1

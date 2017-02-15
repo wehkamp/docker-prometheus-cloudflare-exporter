@@ -5,6 +5,8 @@ It'll expose metrics per PoP and shows requests, bandwidth and threats.
 
 Please note that because of how the Cloudflare API works this exporter will only return statistics from `now() - 5 minutes`.
 
+In addition, the exporter will also fetch DNS analytics. Exporting metrics per records queried at edge resolvers per PoP.
+
 ### Try it
 
 Running the container:
@@ -13,7 +15,6 @@ Running the container:
 docker run \
  -d \
  -p 9199:9199 \
- -e SERVICE_PORT=9199 \
  -e ZONE=example.com \
  -e AUTH_KEY=deadbeefcafe \
  -e AUTH_EMAIL=admin@example.com \
@@ -34,6 +35,7 @@ The exporter exposes the following metrics, all returned per PoP:
 | `cloudflare_pop_threats_seen`        | number of threats identified received in at this location | gauge |
 | `cloudflare_pop_threat_types`        | types of threats seen                                     | gauge |
 | `cloudflare_pop_threat_countries`    | countries causing threats                                 | gauge |
+| `cloudflare_dns_record_queries`      | DNS record queries per edge-location                      | gauge |
 
 Random scrape result:
 
@@ -58,6 +60,10 @@ cloudflare_pop_bandwidth_bytes{colo_id="BRU",type="uncached",zone="example.com"}
 # TYPE cloudflare_pop_received_requests gauge
 cloudflare_pop_received_requests{colo_id="BRU",type="cached",zone="example.com"} 10.0
 cloudflare_pop_received_requests{colo_id="BRU",type="uncached",zone="example.com"} 18.0
+# HELP cloudflare_dns_record_queries DNS queries per record at PoP location.
+# TYPE cloudflare_dns_record_queries gauge
+cloudflare_dns_record_queries{colo_id="SOF",query_response="NXDOMAIN",record_name="qlgijqgzsd.example.com",record_type="A",zone="example.com"} 1.0
+cloudflare_dns_record_queries{colo_id="LAX",query_response="NOERROR",record_name="www.example.com",record_type="A",zone="example.com"} 5.0
 ```
 
 ### Dashboard
