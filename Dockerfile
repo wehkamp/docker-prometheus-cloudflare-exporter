@@ -1,4 +1,4 @@
-FROM wehkamp/alpine:3.4
+FROM wehkamp/alpine:3.5
 
 ENTRYPOINT ["python", "-m", "exporter"]
 EXPOSE 9199
