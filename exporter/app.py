@@ -14,6 +14,7 @@ from flask import Flask
 
 from . import coloexporter
 from . import dnsexporter
+from . import wafexporter
 
 
 logging.basicConfig(level=logging.os.environ.get('LOG_LEVEL', 'INFO'))
@@ -63,6 +64,45 @@ def get_colo_metrics():
     return coloexporter.process(r['result'], ZONE)
 
 
+def get_waf_metrics():
+    endpoint = '%szones/%s/firewall/events?per_page=50%s'
+    sampledatetime_in_seconds = int(datetime.datetime.strptime(
+                datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M"),
+                '%Y-%m-%dT%H:%M').strftime("%s")) - 60
+
+    next_page_id = ''
+    records_total = []
+    sampledatetime = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M")
+    while next_page_id is not None:
+        logging.info('Fetching WAF event data for %s' % sampledatetime)
+        r = get_data_from_cf(url=endpoint % (
+                ENDPOINT, get_zone_id(), next_page_id))
+
+        if not r['success']:
+            logging.error('Failed to get information from Cloudflare')
+            for error in r['errors']:
+                logging.error('[%s] %s' % (error['code'], error['message']))
+                return ''
+
+        if r['result_info']['next_page_id']:
+            logging.debug('Set next_page_id to %s' % r['result_info']['next_page_id'])
+            next_page_id = '&next_page_id=%s' % r['result_info']['next_page_id']
+        else:
+            # the break
+            next_page_id = None
+
+        for event in r['result']:
+            occurrence = event['occurred_at'].split('.')[0]
+            occurrence_in_seconds = datetime.datetime.strptime(occurrence, '%Y-%m-%dT%H:%M:%S').strftime("%s")
+            if int(occurrence_in_seconds) <= int(sampledatetime_in_seconds):
+                logging.debug('Limit reached: break')
+                next_page_id = None
+                continue
+            logging.info('Adding WAF event')
+            records_total.append(event)
+    return wafexporter.process(records_total)
+
+
 def get_dns_metrics():
     logging.info('Fetching DNS metrics data')
     time_since = (
@@ -91,12 +131,12 @@ def get_dns_metrics():
     return dnsexporter.process(r['result']['data'], ZONE)
 
 
-latest_metrics = (get_colo_metrics() + get_dns_metrics())
+latest_metrics = (get_colo_metrics() + get_dns_metrics() + get_waf_metrics())
 
 
 def update_latest():
     global latest_metrics
-    latest_metrics = (get_colo_metrics() + get_dns_metrics())
+    latest_metrics = (get_colo_metrics() + get_dns_metrics() + get_waf_metrics())
 
 
 app = Flask(__name__)
