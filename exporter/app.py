@@ -100,6 +100,7 @@ def get_waf_metrics():
                 continue
             logging.info('Adding WAF event')
             records_total.append(event)
+        logging.info('WAF events found: %s' % len(records_total))
     return wafexporter.process(records_total)
 
 
