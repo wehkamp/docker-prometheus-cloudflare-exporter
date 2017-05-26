@@ -22,7 +22,8 @@ def process(raw_data):
         rule_hits = {}
         for e in data:
             # Skip all attacks from T1, since we're blocking those by default.
-            if e['country'].upper() == "T1" and os.environ.get('SCRAPER_SKIP_T1'):
+            if (e['country'].upper() == "T1") and (
+                    os.environ.get('SCRAPER_SKIP_T1')):
                 continue
 
             if 'rule_id' in e:
@@ -32,7 +33,8 @@ def process(raw_data):
                 else:
                     rule_hits[rule_id] = {}
                     rule_hits[rule_id]['count'] = 1
-                    rule_hits[rule_id]['message'] = e['rule_message'] or 'internal'
+                    rule_hits[rule_id]['message'] = (e['rule_message']
+                                                     or 'internal')
 
             uri_hits.append({
                     'host': e['host'],
@@ -48,7 +50,16 @@ def process(raw_data):
 
     def generate_uri_metrics(data, families):
         families['waf_uri_hits'].add_metric(
-            [data['host'], data['uri'], data['method'], data['protocol'], data['country'], data['action'], data['rule_id'], data['cloudflare_location']],
+            [
+                data['host'],
+                data['uri'],
+                data['method'],
+                data['protocol'],
+                data['country'],
+                data['action'],
+                data['rule_id'],
+                data['cloudflare_location']
+            ],
             1)
 
     def generate_rule_metrics(data, families):

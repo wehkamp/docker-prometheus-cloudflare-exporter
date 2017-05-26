@@ -85,15 +85,18 @@ def get_waf_metrics():
                 return ''
 
         if r['result_info']['next_page_id']:
-            logging.debug('Set next_page_id to %s' % r['result_info']['next_page_id'])
-            next_page_id = '&next_page_id=%s' % r['result_info']['next_page_id']
+            logging.debug('Set next_page_id to %s' %
+                          r['result_info']['next_page_id'])
+            next_page_id = ('&next_page_id=%s' %
+                            r['result_info']['next_page_id'])
         else:
             # the break
             next_page_id = None
 
         for event in r['result']:
             occurrence = event['occurred_at'].split('.')[0]
-            occurrence_in_seconds = datetime.datetime.strptime(occurrence, '%Y-%m-%dT%H:%M:%S').strftime("%s")
+            occurrence_in_seconds = datetime.datetime.strptime(
+                    occurrence, '%Y-%m-%dT%H:%M:%S').strftime("%s")
             if int(occurrence_in_seconds) <= int(sampledatetime_in_seconds):
                 logging.debug('Limit reached: break')
                 next_page_id = None
@@ -137,7 +140,8 @@ latest_metrics = (get_colo_metrics() + get_dns_metrics() + get_waf_metrics())
 
 def update_latest():
     global latest_metrics
-    latest_metrics = (get_colo_metrics() + get_dns_metrics() + get_waf_metrics())
+    latest_metrics = (get_colo_metrics() + get_dns_metrics() +
+                      get_waf_metrics())
 
 
 app = Flask(__name__)
