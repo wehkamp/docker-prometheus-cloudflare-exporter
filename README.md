@@ -7,6 +7,11 @@ Please note that because of how the Cloudflare API works this exporter will only
 
 In addition, the exporter will also fetch DNS analytics. Exporting metrics per records queried at edge resolvers per PoP.
 
+The following roles are required:
+
+* Analytics Administrator
+* Firewall Administrator
+
 ### Try it
 
 Running the container:
@@ -19,9 +24,6 @@ docker run \
  -e AUTH_KEY=deadbeefcafe \
  -e AUTH_EMAIL=admin@example.com \
  wehkamp/prometheus-cloudflare-exporter:1.0
-```
-```
-Fetching data
 ```
 
 ### Metrics
