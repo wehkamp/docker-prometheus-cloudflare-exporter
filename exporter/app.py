@@ -136,9 +136,6 @@ def get_dns_metrics():
     return dnsexporter.process(r['result']['data'], ZONE)
 
 
-latest_metrics = (get_colo_metrics() + get_dns_metrics() + get_waf_metrics())
-
-
 def update_latest():
     global latest_metrics
     latest_metrics = (get_colo_metrics() + get_dns_metrics() +
@@ -169,6 +166,8 @@ def metrics():
 def run():
     logging.info('Starting scrape service for zone "%s" using key [%s...]'
                  % (ZONE, AUTH_KEY[0:6]))
+
+    update_latest()
 
     scheduler = BackgroundScheduler({'apscheduler.timezone': 'UTC'})
     scheduler.add_job(update_latest, 'interval', seconds=60)
