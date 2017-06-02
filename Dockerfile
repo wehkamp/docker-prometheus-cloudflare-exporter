@@ -13,4 +13,4 @@ RUN LAYER=build \
 
 ADD ./exporter /exporter
 
-LABEL container.name=wehkamp/prometheus-cloudflare-exporter:1.1
+LABEL container.name=wehkamp/prometheus-cloudflare-exporter:1.1.1
