@@ -94,7 +94,8 @@ def get_waf_metrics():
             next_page_id = None
 
         for event in r['result']:
-            occurrence = event['occurred_at'].split('.')[0]
+            occurrence = event['occurred_at'].split('.')[0].rstrip('Z')
+            logging.debug('Occurred at: %s (%s)' % (event['occurred_at'], occurrence))
             occurrence_in_seconds = datetime.datetime.strptime(
                     occurrence, '%Y-%m-%dT%H:%M:%S').strftime("%s")
             if int(occurrence_in_seconds) <= int(sampledatetime_in_seconds):
