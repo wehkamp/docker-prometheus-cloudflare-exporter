@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 
+import ast
 import os
 import json
 
@@ -18,8 +19,8 @@ def process(raw_data):
                 yield metric
 
     def process_metrics(data):
-        uri_hits = []
         rule_hits = {}
+        uri_hits = {}
         for e in data:
             # Skip all attacks from T1, since we're blocking those by default.
             if (e['country'].upper() == "T1") and (
@@ -36,7 +37,7 @@ def process(raw_data):
                     rule_hits[rule_id]['message'] = (e['rule_message']
                                                      or 'internal')
 
-            uri_hits.append({
+            uri_hit = str({
                     'host': e['host'],
                     'uri': e['uri'],
                     'method': e['method'],
@@ -45,22 +46,30 @@ def process(raw_data):
                     'action': e['action'],
                     'rule_id': rule_id,
                     'cloudflare_location': e['cloudflare_location']
-                })
+            })
+
+            if uri_hit in uri_hits:
+                uri_hits[uri_hit] += 1
+            else:
+                uri_hits[uri_hit] = 1
+
         return [rule_hits, uri_hits]
 
     def generate_uri_metrics(data, families):
-        families['waf_uri_hits'].add_metric(
-            [
-                data['host'],
-                data['uri'],
-                data['method'],
-                data['protocol'],
-                data['country'],
-                data['action'],
-                data['rule_id'],
-                data['cloudflare_location']
-            ],
-            1)
+        for keystring, count in data.iteritems():
+            keys = ast.literal_eval(keystring)
+            families['waf_uri_hits'].add_metric(
+                [
+                    keys['host'],
+                    keys['uri'],
+                    keys['method'],
+                    keys['protocol'],
+                    keys['country'],
+                    keys['action'],
+                    keys['rule_id'],
+                    keys['cloudflare_location']
+                ],
+                count)
 
     def generate_rule_metrics(data, families):
         for rule_id, d in data.iteritems():
@@ -97,8 +106,8 @@ def process(raw_data):
     # Process all data here to filter and group/sum some numbers.
     waf_rule_hits, waf_uri_hits = process_metrics(raw_data)
 
-    for data in waf_uri_hits:
-        generate_uri_metrics(data, families)
+    for data, count in waf_uri_hits.iteritems():
+        generate_uri_metrics({data: count}, families)
 
     for rule, data in waf_rule_hits.iteritems():
         generate_rule_metrics({rule: data}, families)
