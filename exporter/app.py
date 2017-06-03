@@ -68,7 +68,8 @@ def metric_processing_time(name):
             now = time.time()
             result = func(*args, **kwargs)
             elapsed = (time.time() - now) * 1000
-            logging.debug('Processing %s took %s miliseconds' % (name, elapsed))
+            logging.debug('Processing %s took %s miliseconds' % (
+                name, elapsed))
             internal_metrics['processing_time'].add_metric([name], elapsed)
             return result
         return wrapper
@@ -126,7 +127,8 @@ def get_waf_metrics():
 
         for event in r['result']:
             occurrence = event['occurred_at'].split('.')[0].rstrip('Z')
-            logging.debug('Occurred at: %s (%s)' % (event['occurred_at'], occurrence))
+            logging.debug('Occurred at: %s (%s)' % (
+                event['occurred_at'], occurrence))
             occurrence_in_seconds = datetime.datetime.strptime(
                     occurrence, '%Y-%m-%dT%H:%M:%S').strftime("%s")
             if int(occurrence_in_seconds) <= int(sampledatetime_in_seconds):
