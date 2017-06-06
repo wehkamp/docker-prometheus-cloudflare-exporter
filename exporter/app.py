@@ -9,11 +9,16 @@ import json
 import logging
 
 import requests
+import time
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask
+from prometheus_client.core import GaugeMetricFamily
+from prometheus_client.exposition import generate_latest
 
 from . import coloexporter
 from . import dnsexporter
+from . import wafexporter
 
 
 logging.basicConfig(level=logging.os.environ.get('LOG_LEVEL', 'INFO'))
@@ -37,6 +42,15 @@ HEADERS = {
 }
 
 
+class RegistryMock(object):
+    def __init__(self, metrics):
+        self.metrics = metrics
+
+    def collect(self):
+        for metric in self.metrics:
+            yield metric
+
+
 def get_data_from_cf(url):
     r = requests.get(url, headers=HEADERS)
     return json.loads(r.content.decode('UTF-8'))
@@ -47,6 +61,22 @@ def get_zone_id():
     return r['result'][0]['id']
 
 
+def metric_processing_time(name):
+    def decorator(func):
+        # @wraps(func)
+        def wrapper(*args, **kwargs):
+            now = time.time()
+            result = func(*args, **kwargs)
+            elapsed = (time.time() - now) * 1000
+            logging.debug('Processing %s took %s miliseconds' % (
+                name, elapsed))
+            internal_metrics['processing_time'].add_metric([name], elapsed)
+            return result
+        return wrapper
+    return decorator
+
+
+@metric_processing_time('colo')
 def get_colo_metrics():
     logging.info('Fetching colo metrics data')
     endpoint = '%szones/%s/analytics/colos?since=-35&until=-5&continuous=false'
@@ -63,6 +93,55 @@ def get_colo_metrics():
     return coloexporter.process(r['result'], ZONE)
 
 
+@metric_processing_time('waf')
+def get_waf_metrics():
+    endpoint = '%szones/%s/firewall/events?per_page=50%s'
+    sampledatetime_in_seconds = int(datetime.datetime.strptime(
+                datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M"),
+                '%Y-%m-%dT%H:%M').strftime("%s")) - 60
+
+    zone_id = get_zone_id()
+    next_page_id = ''
+    records_total = []
+    sampledatetime = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M")
+    while next_page_id is not None:
+        logging.info('Fetching WAF event data for %s' % sampledatetime)
+        r = get_data_from_cf(url=endpoint % (
+                ENDPOINT, zone_id, next_page_id))
+
+        if not r['success']:
+            logging.error('Failed to get information from Cloudflare')
+            for error in r['errors']:
+                logging.error('[%s] %s' % (error['code'], error['message']))
+                return ''
+
+        if r['result_info']['next_page_id']:
+            logging.debug('Set next_page_id to %s' %
+                          r['result_info']['next_page_id'])
+            next_page_id = ('&next_page_id=%s' %
+                            r['result_info']['next_page_id'])
+        else:
+            # the break
+            next_page_id = None
+            continue
+
+        for event in r['result']:
+            occurrence = event['occurred_at'].split('.')[0].rstrip('Z')
+            logging.debug('Occurred at: %s (%s)' % (
+                event['occurred_at'], occurrence))
+            occurrence_in_seconds = datetime.datetime.strptime(
+                    occurrence, '%Y-%m-%dT%H:%M:%S').strftime("%s")
+            if int(occurrence_in_seconds) <= int(sampledatetime_in_seconds):
+                logging.debug('Limit reached: break')
+                next_page_id = None
+                break
+            logging.info('Adding WAF event')
+            records_total.append(event)
+        logging.info('WAF events found: %s' % len(records_total))
+    return wafexporter.process(records_total)
+
+
+@metric_processing_time('dns')
 def get_dns_metrics():
     logging.info('Fetching DNS metrics data')
     time_since = (
@@ -91,12 +170,21 @@ def get_dns_metrics():
     return dnsexporter.process(r['result']['data'], ZONE)
 
 
-latest_metrics = (get_colo_metrics() + get_dns_metrics())
-
-
 def update_latest():
-    global latest_metrics
-    latest_metrics = (get_colo_metrics() + get_dns_metrics())
+    global latest_metrics, internal_metrics
+    internal_metrics = {
+        'processing_time': GaugeMetricFamily(
+            'cloudflare_exporter_processing_time_miliseconds',
+            'Processing time in ms',
+            labels=[
+                'name'
+            ]
+        )
+    }
+
+    latest_metrics = (get_colo_metrics() + get_dns_metrics() +
+                      get_waf_metrics())
+    latest_metrics += generate_latest(RegistryMock(internal_metrics.values()))
 
 
 app = Flask(__name__)
@@ -123,6 +211,8 @@ def metrics():
 def run():
     logging.info('Starting scrape service for zone "%s" using key [%s...]'
                  % (ZONE, AUTH_KEY[0:6]))
+
+    update_latest()
 
     scheduler = BackgroundScheduler({'apscheduler.timezone': 'UTC'})
     scheduler.add_job(update_latest, 'interval', seconds=60)
