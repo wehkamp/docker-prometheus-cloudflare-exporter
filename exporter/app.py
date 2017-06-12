@@ -99,6 +99,7 @@ def get_waf_metrics():
     sampledatetime_in_seconds = int(datetime.datetime.strptime(
                 datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M"),
                 '%Y-%m-%dT%H:%M').strftime("%s")) - 60
+    starttime = time.time()
 
     zone_id = get_zone_id()
     next_page_id = ''
@@ -106,6 +107,7 @@ def get_waf_metrics():
     sampledatetime = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M")
     while next_page_id is not None:
         logging.info('Fetching WAF event data for %s' % sampledatetime)
+
         r = get_data_from_cf(url=endpoint % (
                 ENDPOINT, zone_id, next_page_id))
 
@@ -123,7 +125,6 @@ def get_waf_metrics():
         else:
             # the break
             next_page_id = None
-            continue
 
         for event in r['result']:
             occurrence = event['occurred_at'].split('.')[0].rstrip('Z')
@@ -135,9 +136,16 @@ def get_waf_metrics():
                 logging.debug('Limit reached: break')
                 next_page_id = None
                 break
-            logging.info('Adding WAF event')
+            logging.debug('Adding WAF event')
             records_total.append(event)
-        logging.info('WAF events found: %s' % len(records_total))
+        current = time.time()
+        logging.info('WAF events found: %s (took %s seconds)' % (
+            len(records_total), (current - starttime)))
+
+        if current - starttime > 55:
+            logging.warn(
+                    'Too many WAF events, skipping (this affects metrics)')
+            next_page_id = None
     return wafexporter.process(records_total)
 
 
