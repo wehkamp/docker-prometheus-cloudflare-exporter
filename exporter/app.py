@@ -40,6 +40,7 @@ HEADERS = {
     'X-Auth-Email': AUTH_EMAIL,
     'Content-Type': 'application/json'
 }
+HTTP_SESSION = requests.Session()
 
 
 class RegistryMock(object):
@@ -52,7 +53,7 @@ class RegistryMock(object):
 
 
 def get_data_from_cf(url):
-    r = requests.get(url, headers=HEADERS)
+    r = HTTP_SESSION.get(url, headers=HEADERS)
     return json.loads(r.content.decode('UTF-8'))
 
 
