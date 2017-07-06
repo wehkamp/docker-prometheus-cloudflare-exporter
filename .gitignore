@@ -1,4 +1,4 @@
 # IntelliJ
 *.iml
 .idea
-
+*.pyc
