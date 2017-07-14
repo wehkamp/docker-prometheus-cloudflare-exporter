@@ -107,7 +107,7 @@ def get_waf_metrics():
     records = []
     next_page_id = ''
 
-    logging.info('Fetching WAF event data starting at %s, going back 60 seconds'
+    logging.info('Fetching WAF event data starting at %s, going back 60s'
                  % delorean.epoch(window_start_time).format_datetime())
     while next_page_id is not None:
         url = path_format % (ENDPOINT, zone_id, next_page_id)
@@ -133,7 +133,7 @@ def get_waf_metrics():
             logging.debug('Occurred at: %s (%s)'
                           % (occurred_at, occurrence_time))
 
-            if occurrence_time <= window_end_time
+            if occurrence_time <= window_end_time:
                 logging.debug('Window end time reached, breaking')
                 next_page_id = None
                 break
@@ -146,7 +146,7 @@ def get_waf_metrics():
                      % (len(records), now - window_start_time))
 
         if now - window_start_time > 55:
-            logging.warn('Too many WAF events, skipping (this affects metrics)')
+            logging.warn('Too many WAF events, skipping (metrics affected)')
             next_page_id = None
 
     return wafexporter.process(records)
