@@ -7,7 +7,7 @@ ENV FLASK_APP=/exporter/exporter/app.py \
 
 RUN LAYER=build \
   && apk add -U python py-pip \
-  && pip install prometheus_client requests apscheduler Flask \
+  && pip install prometheus_client delorean requests apscheduler Flask \
   && rm -rf /var/cache/apk/* \
   && rm -rf ~/.cache/pip
 

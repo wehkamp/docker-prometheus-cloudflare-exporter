@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import datetime
+import delorean
 import os
 import sys
 import json
@@ -96,58 +97,59 @@ def get_colo_metrics():
 
 @metric_processing_time('waf')
 def get_waf_metrics():
-    endpoint = '%szones/%s/firewall/events?per_page=50%s'
-    sampledatetime_in_seconds = int(datetime.datetime.strptime(
-                datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M"),
-                '%Y-%m-%dT%H:%M').strftime("%s")) - 60
-    starttime = time.time()
+    path_format = '%szones/%s/firewall/events?per_page=50%s'
 
     zone_id = get_zone_id()
+
+    window_start_time = delorean.now().epoch
+    window_end_time = window_start_time - 60
+
+    records = []
     next_page_id = ''
-    records_total = []
-    sampledatetime = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M")
+
+    logging.info('Fetching WAF event data starting at %s, going back 60s'
+                 % delorean.epoch(window_start_time).format_datetime())
     while next_page_id is not None:
-        logging.info('Fetching WAF event data for %s' % sampledatetime)
+        url = path_format % (ENDPOINT, zone_id, next_page_id)
+        r = get_data_from_cf(url=url)
 
-        r = get_data_from_cf(url=endpoint % (
-                ENDPOINT, zone_id, next_page_id))
-
-        if not r['success']:
+        if 'success' not in r or not r['success']:
             logging.error('Failed to get information from Cloudflare')
             for error in r['errors']:
                 logging.error('[%s] %s' % (error['code'], error['message']))
                 return ''
 
         if r['result_info']['next_page_id']:
-            logging.debug('Set next_page_id to %s' %
-                          r['result_info']['next_page_id'])
-            next_page_id = ('&next_page_id=%s' %
-                            r['result_info']['next_page_id'])
+            next_id = r['result_info']['next_page_id']
+            logging.debug('Set next_page_id to %s' % next_id)
+            next_page_id = ('&next_page_id=%s' % next_id)
         else:
-            # the break
             next_page_id = None
 
         for event in r['result']:
-            occurrence = event['occurred_at'].split('.')[0].rstrip('Z')
-            logging.debug('Occurred at: %s (%s)' % (
-                event['occurred_at'], occurrence))
-            occurrence_in_seconds = datetime.datetime.strptime(
-                    occurrence, '%Y-%m-%dT%H:%M:%S').strftime("%s")
-            if int(occurrence_in_seconds) <= int(sampledatetime_in_seconds):
-                logging.debug('Limit reached: break')
+            occurred_at = event['occurred_at']
+            occurrence_time = delorean.parse(occurred_at).epoch
+
+            logging.debug('Occurred at: %s (%s)'
+                          % (occurred_at, occurrence_time))
+
+            if occurrence_time <= window_end_time:
+                logging.debug('Window end time reached, breaking')
                 next_page_id = None
                 break
-            logging.debug('Adding WAF event')
-            records_total.append(event)
-        current = time.time()
-        logging.info('WAF events found: %s (took %s seconds)' % (
-            len(records_total), (current - starttime)))
 
-        if current - starttime > 55:
-            logging.warn(
-                    'Too many WAF events, skipping (this affects metrics)')
+            logging.debug('Adding WAF event')
+            records.append(event)
+
+        now = delorean.now().epoch
+        logging.info('%d WAF events found (took %g seconds so far)'
+                     % (len(records), now - window_start_time))
+
+        if now - window_start_time > 55:
+            logging.warn('Too many WAF events, skipping (metrics affected)')
             next_page_id = None
-    return wafexporter.process(records_total)
+
+    return wafexporter.process(records)
 
 
 @metric_processing_time('dns')
