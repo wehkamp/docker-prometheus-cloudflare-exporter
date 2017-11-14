@@ -20,6 +20,7 @@ from prometheus_client.exposition import generate_latest
 from . import coloexporter
 from . import dnsexporter
 from . import wafexporter
+from . import countryexporter
 
 
 logging.basicConfig(level=logging.os.environ.get('LOG_LEVEL', 'INFO'))
@@ -55,7 +56,7 @@ class RegistryMock(object):
 
 def get_data_from_cf(url):
     r = HTTP_SESSION.get(url, headers=HEADERS)
-    return json.loads(r.content.decode('UTF-8'))
+    return json.loads(r.content.decode('UTF-8'))   #   [u'query', u'errors', u'messages', u'result', u'success']
 
 
 def get_zone_id():
@@ -92,7 +93,27 @@ def get_colo_metrics():
 
     query = r['query']
     logging.info('Window: %s | %s' % (query['since'], query['until']))
-    return coloexporter.process(r['result'], ZONE)
+    return coloexporter.process(r['result'], ZONE)  # list and ZONE
+
+#################
+
+@metric_processing_time('country')
+def get_country_metrics():
+    logging.info('Fetching countries  metrics data')
+    endpoint = '%szones/%s/analytics/dashboard?since=-35&until=-5&continuous=false'
+    r = get_data_from_cf(url=endpoint % (ENDPOINT, get_zone_id()))
+
+    if not r['success']:
+        logging.error('Failed to get COUNTRY information from Cloudflare')
+        for error in r['errors']:
+            logging.error('[%s] %s' % (error['code'], error['message']))
+            return ''
+
+    query = r['query']
+    logging.info('Window: %s | %s' % (query['since'], query['until']))
+    return countryexporter.process(r['result'], ZONE)   # dict and ZONE
+
+################
 
 
 @metric_processing_time('waf')
@@ -193,8 +214,7 @@ def update_latest():
         )
     }
 
-    latest_metrics = (get_colo_metrics() + get_dns_metrics() +
-                      get_waf_metrics())
+    latest_metrics = (get_colo_metrics() + get_country_metrics())
     latest_metrics += generate_latest(RegistryMock(internal_metrics.values()))
 
 
