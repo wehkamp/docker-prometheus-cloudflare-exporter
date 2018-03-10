@@ -97,6 +97,13 @@ def get_colo_metrics():
 
 @metric_processing_time('waf')
 def get_waf_metrics():
+    # Ffetching WAF data has the potention of taking ages to complete.
+    # As this will keep the exporter from gathering any other data else,
+    # introduce an option to just not run it.
+    if not os.environ.get('ENABLE_WAF'):
+        logging.info('Fetching WAF data is disabled')
+        return ''
+
     path_format = '%szones/%s/firewall/events?per_page=50%s'
 
     zone_id = get_zone_id()
