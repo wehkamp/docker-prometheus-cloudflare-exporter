@@ -26,6 +26,17 @@ docker run \
  wehkamp/prometheus-cloudflare-exporter:1.0
 ```
 
+Or if using API Token:
+
+```
+docker run \
+ -d \
+ -p 9199:9199 \
+ -e ZONE=example.com \
+ -e AUTH_TOKEN=example-token_1234 \
+ wehkamp/prometheus-cloudflare-exporter:1.0
+```
+
 ### Metrics
 The exporter exposes the following metrics, all returned per PoP:
 

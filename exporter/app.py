@@ -25,7 +25,7 @@ from . import wafexporter
 logging.basicConfig(level=logging.os.environ.get('LOG_LEVEL', 'INFO'))
 
 
-REQUIRED_VARS = {'AUTH_EMAIL', 'AUTH_KEY', 'SERVICE_PORT', 'ZONE'}
+REQUIRED_VARS = {'SERVICE_PORT', 'ZONE'}
 for key in REQUIRED_VARS:
     if key not in os.environ:
         logging.error('Missing value for %s' % key)
@@ -36,11 +36,23 @@ ZONE = os.environ.get('ZONE')
 ENDPOINT = 'https://api.cloudflare.com/client/v4/'
 AUTH_EMAIL = os.environ.get('AUTH_EMAIL')
 AUTH_KEY = os.environ.get('AUTH_KEY')
+AUTH_TOKEN = os.environ.get('AUTH_TOKEN')
+
 HEADERS = {
-    'X-Auth-Key': AUTH_KEY,
-    'X-Auth-Email': AUTH_EMAIL,
     'Content-Type': 'application/json'
 }
+
+if AUTH_TOKEN:
+    HEADERS['Authorization'] = 'Bearer %s' % AUTH_TOKEN
+    AUTH_ID = 'token %s' % AUTH_TOKEN[0:6]
+elif AUTH_EMAIL and AUTH_KEY:
+    HEADERS['X-Auth-Key'] = AUTH_KEY
+    HEADERS['X-Auth-Email'] = AUTH_EMAIL
+    AUTH_ID = 'key %s' % AUTH_KEY[0:6]
+else:
+    logging.error('AUTH_TOKEN or AUTH_EMAIL and AUTH_KEY must be set')
+    sys.exit()
+
 HTTP_SESSION = requests.Session()
 
 
@@ -227,8 +239,8 @@ def metrics():
 
 
 def run():
-    logging.info('Starting scrape service for zone "%s" using key [%s...]'
-                 % (ZONE, AUTH_KEY[0:6]))
+    logging.info('Starting scrape service for zone "%s" using [%s...]'
+                 % (ZONE, AUTH_ID))
 
     update_latest()
 
