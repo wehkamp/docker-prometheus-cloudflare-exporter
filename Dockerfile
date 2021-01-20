@@ -6,8 +6,8 @@ ENV FLASK_APP=/exporter/exporter/app.py \
     SERVICE_PORT=9199
 
 RUN LAYER=build \
-  && apk add -U python3 py-pip \
-  && pip install prometheus_client delorean requests apscheduler Flask \
+  && apk add -U python3 py3-pip\
+  && pip3 install prometheus_client delorean requests apscheduler Flask \
   && rm -rf /var/cache/apk/* \
   && rm -rf ~/.cache/pip
 
