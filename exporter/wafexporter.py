@@ -113,7 +113,7 @@ def process(raw_data):
         generate_rule_metrics({rule: data}, families)
 
     # Return the metrics.
-    return generate_latest(RegistryMock(families.values()))
+    return generate_latest(RegistryMock(families.values())).decode()
 
 
 if __name__ == "__main__":

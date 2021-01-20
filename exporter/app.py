@@ -156,7 +156,7 @@ def get_waf_metrics():
             logging.warn('Too many WAF events, skipping (metrics affected)')
             next_page_id = None
 
-    return wafexporter.process(records).decode()
+    return wafexporter.process(records)
 
 
 @metric_processing_time('dns')
@@ -185,7 +185,7 @@ def get_dns_metrics():
     logging.info('Records retrieved: %d' % records)
     if records < 1:
         return ''
-    return dnsexporter.process(r['result']['data'], ZONE).decode()
+    return dnsexporter.process(r['result']['data'], ZONE)
 
 
 def update_latest():
@@ -202,7 +202,7 @@ def update_latest():
 
     latest_metrics = (get_colo_metrics() + get_dns_metrics() +
                       get_waf_metrics())
-    latest_metrics += generate_latest(RegistryMock(internal_metrics.values()))
+    latest_metrics += generate_latest(RegistryMock(internal_metrics.values())).decode()
 
 
 app = Flask(__name__)

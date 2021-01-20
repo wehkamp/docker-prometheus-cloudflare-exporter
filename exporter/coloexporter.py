@@ -80,7 +80,7 @@ def process(raw_data, zone):
 
     for pop_data in raw_data:
         generate_metrics(pop_data, families)
-    return generate_latest(RegistryMock(families.values()))
+    return generate_latest(RegistryMock(families.values())).decode()
 
 
 if __name__ == "__main__":
