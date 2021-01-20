@@ -50,4 +50,4 @@ if __name__ == "__main__":
     path = os.path.join(source_dir, "sample-dns")
 
     with open(path) as f:
-        print process(json.load(f)['result'])
+        print(process(json.load(f)['result']))

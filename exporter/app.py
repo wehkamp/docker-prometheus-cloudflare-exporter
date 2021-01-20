@@ -156,7 +156,7 @@ def get_waf_metrics():
             logging.warn('Too many WAF events, skipping (metrics affected)')
             next_page_id = None
 
-    return wafexporter.process(records)
+    return wafexporter.process(records).decode()
 
 
 @metric_processing_time('dns')
@@ -185,7 +185,7 @@ def get_dns_metrics():
     logging.info('Records retrieved: %d' % records)
     if records < 1:
         return ''
-    return dnsexporter.process(r['result']['data'], ZONE)
+    return dnsexporter.process(r['result']['data'], ZONE).decode()
 
 
 def update_latest():
