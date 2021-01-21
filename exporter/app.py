@@ -13,7 +13,7 @@ import requests
 import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask
+from flask import Flask, Response
 from prometheus_client.core import GaugeMetricFamily
 from prometheus_client.exposition import generate_latest
 
@@ -223,7 +223,7 @@ def status():
 
 @app.route("/metrics")
 def metrics():
-    return latest_metrics
+    return Response(latest_metrics, mimetype='text/plain')
 
 
 def run():
