@@ -56,7 +56,7 @@ def process(raw_data):
         return [rule_hits, uri_hits]
 
     def generate_uri_metrics(data, families):
-        for keystring, count in data.iteritems():
+        for keystring, count in iter(data.items()):
             keys = ast.literal_eval(keystring)
             families['waf_uri_hits'].add_metric(
                 [
@@ -72,7 +72,7 @@ def process(raw_data):
                 count)
 
     def generate_rule_metrics(data, families):
-        for rule_id, d in data.iteritems():
+        for rule_id, d in iter(data.items()):
             families['waf_rule_hits'].add_metric(
                 [rule_id, d['message']],
                 d['count'])
@@ -106,14 +106,14 @@ def process(raw_data):
     # Process all data here to filter and group/sum some numbers.
     waf_rule_hits, waf_uri_hits = process_metrics(raw_data)
 
-    for data, count in waf_uri_hits.iteritems():
+    for data, count in iter(waf_uri_hits.items()):
         generate_uri_metrics({data: count}, families)
 
-    for rule, data in waf_rule_hits.iteritems():
+    for rule, data in iter(waf_rule_hits.items()):
         generate_rule_metrics({rule: data}, families)
 
     # Return the metrics.
-    return generate_latest(RegistryMock(families.values()))
+    return generate_latest(RegistryMock(families.values())).decode()
 
 
 if __name__ == "__main__":
@@ -121,4 +121,4 @@ if __name__ == "__main__":
     path = os.path.join(source_dir, "sample-waf")
 
     with open(path) as f:
-        print process(json.load(f)['result'])
+        print(process(json.load(f)['result']))

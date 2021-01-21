@@ -13,7 +13,7 @@ import requests
 import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask
+from flask import Flask, Response
 from prometheus_client.core import GaugeMetricFamily
 from prometheus_client.exposition import generate_latest
 
@@ -202,7 +202,7 @@ def update_latest():
 
     latest_metrics = (get_colo_metrics() + get_dns_metrics() +
                       get_waf_metrics())
-    latest_metrics += generate_latest(RegistryMock(internal_metrics.values()))
+    latest_metrics += generate_latest(RegistryMock(internal_metrics.values())).decode()
 
 
 app = Flask(__name__)
@@ -223,7 +223,7 @@ def status():
 
 @app.route("/metrics")
 def metrics():
-    return latest_metrics
+    return Response(latest_metrics, mimetype='text/plain')
 
 
 def run():

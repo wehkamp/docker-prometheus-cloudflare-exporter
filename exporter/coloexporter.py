@@ -36,18 +36,18 @@ def process(raw_data, zone):
             [zone, 'uncached', pop_data['colo_id']],
             serie['bandwidth']['uncached'])
 
-        for http_status, count in serie['requests']['http_status'].iteritems():
+        for http_status, count in iter(serie['requests']['http_status'].items()):
             families['http_responses_sent'].add_metric(
                 [zone, pop_data['colo_id'], http_status], count)
 
         families['threats_seen'].add_metric(
             [zone, pop_data['colo_id']], serie['threats']['all'])
 
-        for threat, count in serie['threats']['type'].iteritems():
+        for threat, count in iter(serie['threats']['type'].items()):
             families['threat_types'].add_metric(
                 [zone, pop_data['colo_id'], threat], count)
 
-        for country, count in serie['threats']['country'].iteritems():
+        for country, count in iter(serie['threats']['country'].items()):
             families['threat_countries'].add_metric(
                 [zone, pop_data['colo_id'], country], count)
 
@@ -80,7 +80,7 @@ def process(raw_data, zone):
 
     for pop_data in raw_data:
         generate_metrics(pop_data, families)
-    return generate_latest(RegistryMock(families.values()))
+    return generate_latest(RegistryMock(families.values())).decode()
 
 
 if __name__ == "__main__":
@@ -90,4 +90,4 @@ if __name__ == "__main__":
     path = os.path.join(source_dir, "sample")
 
     with open(path) as f:
-        print process(json.load(f)['result'])
+        print(process(json.load(f)['result']))
