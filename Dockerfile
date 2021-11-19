@@ -1,4 +1,4 @@
-FROM 234348545939.dkr.ecr.eu-west-1.amazonaws.com/wehkamp/alpine:3.5
+FROM alpine:3.5
 
 ENTRYPOINT ["python", "-m", "exporter"]
 EXPOSE 9199
