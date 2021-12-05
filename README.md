@@ -1,4 +1,4 @@
-# Cloudflare exporter for Prometheus
+# Cloudflare Exporter for Prometheus
 
 A very simple Prometheus exporter that exposes metrics from Cloudflare's colocations API as described in the [API documentation](https://api.cloudflare.com/#zone-analytics-analytics-by-co-locations). Sadly, this is for Cloudflare Enterprise customers only.
 It'll expose metrics per PoP and shows requests, bandwidth and threats.
